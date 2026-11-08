@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f2b46">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Heatmap">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>Dining Room Heatmap - Voyage 259</title>
+<style>
+:root{--bg:#0d1420;--card:#16202f;--ink:#e8eef8;--mut:#93a1ba;--line:#26334a;--g0:#1d2a3c;--g1:#e9a21b;--g2:#e5532d;--g3:#b3202a;--ok:#2b8a3e}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 "Segoe UI",system-ui,-apple-system,sans-serif}
+header{color:#fff;position:sticky;top:0;z-index:5;background:linear-gradient(135deg,#0f2b46,#1b4a7a);padding:calc(10px + env(safe-area-inset-top)) 12px 8px;box-shadow:0 2px 10px #0006}
+h1{margin:0;font-size:17px;letter-spacing:.05em}.sub{font-size:11.5px;opacity:.75}
+.row{display:flex;gap:6px;margin-top:8px;overflow-x:auto}.row::-webkit-scrollbar{display:none}
+.b{flex:0 0 auto;border:1px solid #ffffff40;background:#ffffff14;color:#fff;border-radius:18px;padding:6px 13px;font:inherit;font-size:13.5px;font-weight:600}
+.b.on{background:#fff;color:#0f2b46}
+select,input{font:inherit;font-size:14px;border-radius:10px;border:1px solid #ffffff40;background:#ffffff14;color:#fff;padding:7px 10px;min-width:0}
+select option{color:#000}input::placeholder{color:#ffffffa0}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--mut);padding:8px 12px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+main{padding:8px 10px 90px}
+.kp{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 10px}.kp div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 8px;text-align:center}
+.kp b{display:block;font-size:20px}.kp span{font-size:10.5px;color:var(--mut)}
+.st{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.sh{display:flex;align-items:center;gap:8px;padding:9px 11px;border-left:6px solid var(--g0)}
+.sh .n{flex:1}.sh .n b{display:block;font-size:14.5px}.sh .n span{font-size:11.5px;color:var(--mut)}
+.badge{min-width:34px;text-align:center;border-radius:10px;padding:4px 7px;font-weight:700;font-size:13px;background:var(--g0)}
+.wg{padding:2px 10px 10px}.wl{font-size:11px;color:var(--mut);margin:7px 2px 4px;display:flex;justify-content:space-between}
+.tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.t{position:relative;border-radius:10px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--g0);border:2px solid transparent;font-weight:700;font-size:15px;cursor:pointer;user-select:none}
+.t small{font-size:10px;font-weight:600;opacity:.85}
+.t.c1{background:var(--g1);color:#1b1300}.t.c2{background:var(--g2);color:#fff}.t.c3{background:var(--g3);color:#fff;animation:pulse 1.6s infinite}
+.t.crit{border-color:#fff}.t.empty{opacity:.35}.t.hit{outline:3px solid #4dd0ff}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #b3202aaa}70%{box-shadow:0 0 0 9px #b3202a00}100%{box-shadow:0 0 0 0 #b3202a00}}
+.dot{position:absolute;top:3px;right:4px;width:7px;height:7px;border-radius:50%;background:#4dd0ff}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:82vh;overflow:auto;background:#111a28;border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px 14px 28px;transform:translateY(105%);transition:transform .22s;z-index:9;box-shadow:0 -8px 30px #000a}
+.sheet.open{transform:none}.sheet h3{margin:0 0 2px;font-size:18px}.x{position:absolute;right:12px;top:8px;background:none;border:0;color:#fff;font-size:28px}
+.gst{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px;background:var(--card)}
+.gst .h{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.pill{font-size:11px;font-weight:700;border-radius:8px;padding:2px 7px;color:#fff}.CRITICAL{background:var(--g3)}.HIGH{background:var(--g2)}.MEDIUM{background:var(--g1);color:#222}.LOW{background:#4d94d8}
+.tag{display:inline-block;font-size:11px;background:#ffffff14;border-radius:8px;padding:1px 7px;margin:3px 3px 0 0}
+.log{font-size:12.5px;border-left:3px solid var(--g2);padding:4px 8px;margin-top:6px;background:#ffffff08;border-radius:0 6px 6px 0}
+.mut{color:var(--mut)}.empty-msg{text-align:center;color:var(--mut);padding:30px}
+.fab{position:fixed;right:14px;bottom:16px;z-index:6;background:#1f6feb;color:#fff;border:0;border-radius:24px;padding:11px 16px;font:inherit;font-weight:700;box-shadow:0 4px 14px #0008}
+@media (prefers-color-scheme:light){:root{--bg:#f2f4f8;--card:#fff;--ink:#14213d;--mut:#66728a;--line:#e0e5ee;--g0:#e3e8f0}.sheet{background:#fff}.log{background:#00000006}.tag{background:#0000000d}}
+</style></head><body>
+<header>
+ <h1>DINING ROOM HEATMAP</h1><div class="sub" id="sub"></div>
+ <div class="row" id="decks"></div>
+ <div class="row">
+  <select id="hw" style="flex:1"></select>
+  <select id="mode"><option value="r">Complaint logs</option><option value="p">Problem logs</option><option value="a">All logs</option></select>
+ </div>
+ <div class="row"><input id="q" type="search" placeholder="Table or cabin" style="flex:1" inputmode="numeric"><button class="b" id="only">Only 2+</button><button class="b" id="upd">&#8635; Data</button><input type="file" id="file" accept=".json,application/json" hidden></div>
+</header>
+<div class="legend"><span><i style="background:var(--g0)"></i>0</span><span><i style="background:var(--g1)"></i>1 log</span><span><i style="background:var(--g2)"></i>2 logs</span><span><i style="background:var(--g3)"></i>3+ logs</span><span><i style="border:2px solid #fff;background:transparent"></i>CRITICAL / HIGH guest</span><span><i style="background:#4dd0ff;border-radius:50%"></i>MyTime check-in</span></div>
+<main id="out"></main>
+<button class="fab" id="top">&#8593; Top</button>
+<div class="sheet" id="sh"></div>
+<script>
+const LS={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}}};
+function toast(m){let e=document.getElementById("toast");if(!e){e=document.createElement("div");e.id="toast";e.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(70px + env(safe-area-inset-bottom));z-index:20;background:#1f6feb;color:#fff;padding:12px 14px;border-radius:12px;font-weight:600;box-shadow:0 6px 20px #0008";document.body.appendChild(e)}e.textContent=m;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",4000)}
+let D=null;
+try{const s=LS.get("hm_data");if(s){const x=JSON.parse(s);if(x&&x.tables&&x.hws)D=x}}catch(e){}
+function loadFile(f){if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x.tables||!x.hws||!x.cabs)throw 0;if(!LS.set("hm_data",JSON.stringify(x))){toast("Could not save the data on this phone.");return}toast("Data loaded: voyage "+x.voyage+", guest log "+x.logdate);setTimeout(()=>location.reload(),1200)}catch(err){toast("This is not a heatmap data file (heatmap_data.json).")}};rd.readAsText(f)}
+if(!D){document.body.innerHTML=`<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;background:linear-gradient(160deg,#0f2b46,#0d1420);color:#fff;font-family:system-ui,sans-serif"><img src="icon-192.png" width="96" height="96" style="border-radius:22px;margin-bottom:18px" alt=""><h1 style="margin:0 0 6px;font-size:22px">Dining Room Heatmap</h1><p style="opacity:.8;max-width:320px;margin:0 0 22px">Load today's data file (heatmap_data.json). Save it from WhatsApp or e-mail to Files first. The data stays on this phone only.</p><label style="background:#fff;color:#0f2b46;font-weight:700;border-radius:24px;padding:13px 24px;cursor:pointer">Load data file<input type="file" id="first" accept=".json,application/json" hidden></label><p style="opacity:.6;font-size:12px;margin-top:26px">Utopia of the Seas · Restaurant Operations</p></div>`;document.getElementById("first").onchange=e=>loadFile(e.target.files[0]);}
+else{
+const $=s=>document.querySelector(s),esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const DECKS=[...new Set(D.hws.map(h=>h.deck))];
+const S={deck:LS.get("hm_deck")||DECKS[1]||DECKS[0],hw:LS.get("hm_hw")||"ALL",mode:LS.get("hm_mode")||"r",q:"",only:false};
+try{if(!DECKS.includes(S.deck))S.deck=DECKS[0]}catch(e){}
+$("#sub").textContent=`Voyage ${D.voyage} | guest log ${D.logdate} | ${Object.keys(D.tables).length} tables${D.stamp?" | data "+D.stamp:""}`;
+const cabN=c=>{const x=D.cabs[c];return x?(S.mode=="a"?x.a:S.mode=="p"?x.p:x.r):0};
+const tabCabs=t=>[...new Set((D.tables[t]||{g:[]}).g.map(g=>g[0]))];
+const tabN=t=>tabCabs(t).reduce((s,c)=>s+cabN(c),0);
+const tabCrit=t=>tabCabs(t).some(c=>["CRITICAL","HIGH"].includes((D.cabs[c]||{}).lv));
+const cls=n=>n>=3?"c3":n>=2?"c2":n>=1?"c1":"";
+const col=n=>n>=3?"var(--g3)":n>=2?"var(--g2)":n>=1?"var(--g1)":"var(--g0)";
+function decks(){$("#decks").innerHTML=DECKS.map(d=>`<button class="b ${d==S.deck?"on":""}" data-d="${d}">${d}${d=="Deck 3"?" · MyTime":""}</button>`).join("")+`<button class="b ${S.deck=="ALL"?"on":""}" data-d="ALL">All</button>`;
+ document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{S.deck=b.dataset.d;S.hw="ALL";LS.set("hm_deck",S.deck);LS.set("hm_hw","ALL");hwSel();draw()})}
+function hwSel(){const hs=D.hws.map((h,i)=>[h,i]).filter(([h])=>S.deck=="ALL"||h.deck==S.deck);
+ $("#hw").innerHTML='<option value="ALL">All head waiters</option>'+hs.map(([h,i])=>`<option value="${i}">${esc(h.name)} (stn ${h.stn})</option>`).join("");$("#hw").value=S.hw;if($("#hw").value!=S.hw){S.hw="ALL";$("#hw").value="ALL"}}
+function draw(){
+ const q=S.q.trim();let hit=new Set();
+ if(q){for(const t in D.tables){if(String(t)==q||D.tables[t].g.some(g=>g[0]==q))hit.add(+t)}}
+ const hs=D.hws.map((h,i)=>({...h,i})).filter(h=>(S.deck=="ALL"||h.deck==S.deck)&&(S.hw=="ALL"||h.i==S.hw)&&(!q||h.tables.some(t=>hit.has(t))));
+ let T=0,T1=0,T2=0,L=0;
+ const html=hs.map(h=>{
+  const tabs=h.tables.map(t=>({t,n:tabN(t),cr:tabCrit(t),mt:(D.tables[t]||{g:[]}).g.some(g=>g[2].startsWith("MyTime")),e:!(D.tables[t]||{g:[]}).g.length}));
+  tabs.forEach(x=>{T++;L+=x.n;if(x.n==1)T1++;if(x.n>=2)T2++});
+  const tot=tabs.reduce((s,x)=>s+x.n,0),mx=Math.max(0,...tabs.map(x=>x.n)),n2=tabs.filter(x=>x.n>=2).length;
+  if(S.only&&!n2)return"";
+  const byW={};tabs.forEach(x=>{const w=(D.tables[x.t]||{}).w||"No waiter";(byW[w]=byW[w]||[]).push(x)});
+  return `<div class="st"><div class="sh" style="border-left-color:${col(mx)}"><div class="n"><b>${esc(h.name)}</b><span>${h.k} · Station ${h.stn} · ${h.deck} · ${h.tables.length} tables${n2?` · <b style="color:var(--g2)">${n2} table${n2>1?"s":""} with 2+</b>`:""}</span></div><span class="badge" style="background:${col(mx)};color:${mx>=1?"#fff":"inherit"}">${tot}</span></div>
+  <div class="wg">${Object.entries(byW).map(([w,xs])=>{const sx=S.only?xs.filter(x=>x.n>=2):xs;if(!sx.length)return"";return `<div class="wl"><span>${esc(w)}</span><span>${xs.reduce((s,x)=>s+x.n,0)||""}</span></div><div class="tg">${sx.map(x=>`<div class="t ${cls(x.n)} ${x.cr?"crit":""} ${x.e?"empty":""} ${hit.has(x.t)?"hit":""}" data-t="${x.t}">${x.mt?'<span class="dot"></span>':""}${x.t}<small>${x.n||""}</small></div>`).join("")}</div>`}).join("")}</div></div>`}).join("");
+ $("#out").innerHTML=`<div class="kp"><div><b>${T}</b><span>tables</span></div><div><b style="color:var(--g1)">${T1}</b><span>with 1 log</span></div><div><b style="color:var(--g2)">${T2}</b><span>with 2+ logs</span></div><div><b>${L}</b><span>${S.mode=="a"?"all":S.mode=="p"?"problem":"complaint"} logs</span></div></div>`+(html||'<div class="empty-msg">Nothing to show for this filter.</div>');
+ document.querySelectorAll(".t").forEach(e=>e.onclick=()=>open(+e.dataset.t));
+ if(q&&hit.size){const f=document.querySelector(".t.hit");if(f)f.scrollIntoView({block:"center",behavior:"smooth"})}
+}
+function open(t){const tb=D.tables[t];if(!tb)return;const h=D.hws[tb.h]||{};
+ const groups={};tb.g.forEach(g=>{(groups[g[0]]=groups[g[0]]||[]).push(g)});
+ const cabs=Object.keys(groups).sort((a,b)=>cabN(b)-cabN(a));
+ $("#sh").innerHTML=`<button class="x" onclick="$('#sh').classList.remove('open')">&times;</button><h3>Table ${t} <span class="badge" style="background:${col(tabN(t))};color:#fff">${tabN(t)}</span></h3>
+ <div class="mut" style="font-size:13px">${esc(h.deck||"")} · HW <b>${esc(h.name||"-")}</b><br>Waiter <b>${esc(tb.w||"-")}</b> · Asst <b>${esc(tb.a||"-")}</b></div>
+ ${cabs.length?cabs.map(c=>{const x=D.cabs[c]||{a:0,p:0,r:0,rel:[],cats:{}};const g=groups[c];return `<div class="gst"><div class="h"><b>Cabin ${c}</b><span>${x.lv?`<span class="pill ${x.lv}">${x.lv} ${x.sc}</span>`:""}</span></div>
+  <div style="font-size:13px">${g.map(y=>`${esc(y[1])} <span class="mut">· ${esc(y[2])}</span>`).join("<br>")}</div>
+  <div class="mut" style="font-size:12px;margin-top:3px">${x.r} complaint · ${x.p} problem · ${x.a} total logs${x.tier&&x.tier!="-"?" · "+esc(x.tier):""}</div>
+  <div>${Object.entries(x.cats||{}).filter(([k])=>k!="Opt-out").map(([k,v])=>`<span class="tag">${esc(k)} ${v}</span>`).join("")}</div>
+  ${(x.rel||[]).filter(l=>l.k.some(k=>k!="Opt-out")).map(l=>`<div class="log"><b>${esc(l.c)}</b><br><span class="mut">${esc(l.d)}</span><br>${esc(l.x)}</div>`).join("")}</div>`}).join(""):'<div class="empty-msg">No guests assigned or checked in at this table.</div>'}`;
+ $("#sh").classList.add("open")}
+$("#hw").onchange=e=>{S.hw=e.target.value;LS.set("hm_hw",S.hw);draw()};
+$("#mode").value=S.mode;$("#mode").onchange=e=>{S.mode=e.target.value;LS.set("hm_mode",S.mode);draw()};
+$("#q").oninput=e=>{S.q=e.target.value;draw()};
+$("#only").onclick=e=>{S.only=!S.only;e.target.classList.toggle("on",S.only);draw()};
+$("#upd").onclick=()=>$("#file").click();
+$("#file").onchange=e=>loadFile(e.target.files[0]);
+$("#top").onclick=()=>scrollTo({top:0,behavior:"smooth"});
+document.addEventListener("keydown",e=>{if(e.key=="Escape")$("#sh").classList.remove("open")});
+(()=>{try{const p=new URLSearchParams(location.search).get("hw");if(!p)return;const tok=s=>s.toLowerCase().split(/[\s,]+/).filter(Boolean).sort().join(" ");const want=tok(p);const i=D.hws.findIndex(h=>tok(h.name)==want||want.split(" ").filter(w=>w.length>2).every(w=>h.name.toLowerCase().includes(w)));if(i>=0){S.deck=D.hws[i].deck;S.hw=String(i)}}catch(e){}})();
+if(new URLSearchParams(location.search).get("app")){const h=document.querySelector("header h1");if(h)h.style.display="none"}
+decks();hwSel();draw();
+}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})})}
+</script></body></html>
