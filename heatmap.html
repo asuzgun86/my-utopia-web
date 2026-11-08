@@ -34,7 +34,7 @@ main{padding:8px 10px 90px}
 .tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
 .t{position:relative;border-radius:10px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--g0);border:2px solid transparent;font-weight:700;font-size:15px;cursor:pointer;user-select:none}
 .t small{font-size:10px;font-weight:600;opacity:.85}
-.t.c1{background:var(--g1);color:#1b1300}.t.c2{background:var(--g2);color:#fff}.t.c3{background:var(--g3);color:#fff;animation:pulse 1.6s infinite}
+.t.c1{background:var(--g1);color:#1b1300}.t.c2{color:#fff;background:linear-gradient(0deg,#c2410c,#f97316,#fb923c,#f97316,#c2410c);background-size:100% 300%;animation:fire 2.4s ease-in-out infinite,glow2 1.8s ease-in-out infinite}.t.c3{color:#fff;text-shadow:0 0 6px #000a;background:linear-gradient(0deg,#7f1d1d,#dc2626,#f97316,#facc15,#dc2626,#7f1d1d);background-size:100% 400%;animation:fire 1.1s ease-in-out infinite,glow3 0.9s ease-in-out infinite,shake 2.6s infinite}.t.c3::after{content:"\1F525";position:absolute;top:-9px;right:-5px;font-size:16px;animation:flick .5s ease-in-out infinite alternate;filter:drop-shadow(0 0 4px #f97316)}@keyframes fire{0%{background-position:0 0}50%{background-position:0 100%}100%{background-position:0 0}}@keyframes glow2{0%,100%{box-shadow:0 0 6px 1px #f9731688}50%{box-shadow:0 0 14px 4px #f97316cc}}@keyframes glow3{0%,100%{box-shadow:0 0 8px 2px #dc2626aa,0 0 18px 4px #f9731655}50%{box-shadow:0 0 18px 6px #ef4444ee,0 0 32px 10px #facc1566}}@keyframes shake{0%,92%,100%{transform:none}94%{transform:rotate(-3deg) scale(1.04)}96%{transform:rotate(3deg) scale(1.04)}98%{transform:rotate(-2deg)}}@keyframes flick{from{transform:scale(1) rotate(-6deg)}to{transform:scale(1.25) rotate(6deg)}}@media (prefers-reduced-motion:reduce){.t.c2,.t.c3,.t.c3::after{animation:none}}
 .t.crit{border-color:#fff}.t.empty{opacity:.35}.t.hit{outline:3px solid #4dd0ff}
 @keyframes pulse{0%{box-shadow:0 0 0 0 #b3202aaa}70%{box-shadow:0 0 0 9px #b3202a00}100%{box-shadow:0 0 0 0 #b3202a00}}
 .dot{position:absolute;top:3px;right:4px;width:7px;height:7px;border-radius:50%;background:#4dd0ff}
@@ -58,7 +58,7 @@ main{padding:8px 10px 90px}
  </div>
  <div class="row"><input id="q" type="search" placeholder="Table or cabin" style="flex:1" inputmode="numeric"><button class="b" id="only">Only 2+</button><button class="b" id="upd">&#8635; Data</button><input type="file" id="file" accept=".json,application/json" hidden></div>
 </header>
-<div class="legend"><span><i style="background:var(--g0)"></i>0</span><span><i style="background:var(--g1)"></i>1 log</span><span><i style="background:var(--g2)"></i>2 logs</span><span><i style="background:var(--g3)"></i>3+ logs</span><span><i style="border:2px solid #fff;background:transparent"></i>CRITICAL / HIGH guest</span><span><i style="background:#4dd0ff;border-radius:50%"></i>MyTime check-in</span></div>
+<div class="legend"><span><i style="background:var(--g0)"></i>0</span><span><i style="background:var(--g1)"></i>1 log</span><span><i style="background:#f97316;box-shadow:0 0 6px #f97316"></i>2 logs (hot)</span><span><i style="background:linear-gradient(0deg,#dc2626,#facc15);box-shadow:0 0 8px #ef4444"></i>&#128293; 3+ logs (on fire)</span><span><i style="border:2px solid #fff;background:transparent"></i>CRITICAL / HIGH guest</span><span><i style="background:#4dd0ff;border-radius:50%"></i>MyTime check-in</span></div>
 <main id="out"></main>
 <button class="fab" id="top">&#8593; Top</button>
 <div class="sheet" id="sh"></div>
@@ -80,7 +80,7 @@ const tabCabs=t=>[...new Set((D.tables[t]||{g:[]}).g.map(g=>g[0]))];
 const tabN=t=>tabCabs(t).reduce((s,c)=>s+cabN(c),0);
 const tabCrit=t=>tabCabs(t).some(c=>["CRITICAL","HIGH"].includes((D.cabs[c]||{}).lv));
 const cls=n=>n>=3?"c3":n>=2?"c2":n>=1?"c1":"";
-const col=n=>n>=3?"var(--g3)":n>=2?"var(--g2)":n>=1?"var(--g1)":"var(--g0)";
+const col=n=>n>=3?"#dc2626":n>=2?"#f97316":n>=1?"var(--g1)":"var(--g0)";
 function decks(){$("#decks").innerHTML=DECKS.map(d=>`<button class="b ${d==S.deck?"on":""}" data-d="${d}">${d}${d=="Deck 3"?" · MyTime":""}</button>`).join("")+`<button class="b ${S.deck=="ALL"?"on":""}" data-d="ALL">All</button>`;
  document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{S.deck=b.dataset.d;S.hw="ALL";LS.set("hm_deck",S.deck);LS.set("hm_hw","ALL");hwSel();draw()})}
 function hwSel(){const hs=D.hws.map((h,i)=>[h,i]).filter(([h])=>S.deck=="ALL"||h.deck==S.deck);

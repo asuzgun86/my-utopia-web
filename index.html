@@ -587,7 +587,7 @@ const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.par
 const D={meta:{},station:null,grats:null,tlc:null,menus:null,compass:null,built:null,files:{}};
 /* web (Safari) version: crew & guest data never come from the website - they come from the
    "My Utopia data file" each phone loads once per cruise, kept in this phone's IndexedDB */
-const PRIVATE=['station','grats','tlc','history','guests','birthdays','avg8','sales','guestlog','risk','specialty','pol'];
+const PRIVATE=['station','grats','tlc','history','guests','birthdays','avg8','sales','guestlog','risk','specialty','pol','roster'];
 const PACK={db(){return new Promise((ok,no)=>{try{const q=indexedDB.open('myutopia',1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)}catch(e){no(e)}})},
  async get(k){try{const d=await this.db();return await new Promise(ok=>{const r=d.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>ok(r.result);r.onerror=()=>ok(null)})}catch(e){return null}},
  async set(k,v){const d=await this.db();return new Promise((ok,no)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>ok(true);t.onerror=()=>no(t.error)})}};
@@ -602,7 +602,7 @@ function loadPackFile(f){ if(!f) return; const msg=$('loadmsg'); msg.textContent
       msg.textContent='Data loaded: voyage '+x.voyage+' ('+x.stamp+'). Opening…'; setTimeout(()=>location.reload(),900);
     }catch(e){ msg.textContent='This is not a My Utopia data file (myutopia_data_V###.json).'; } }; rd.readAsText(f); }
 async function loadAll(){
-  const names=['meta','station','grats','tlc','menus','compass','history','guests','birthdays','avg8','sales','guestlog','risk','specialty','pol','compassdays'];
+  const names=['meta','station','grats','tlc','menus','compass','history','guests','birthdays','avg8','sales','guestlog','risk','specialty','pol','compassdays','roster'];
   const res=await Promise.allSettled(names.map(n=>getJSON('data/'+n+'.json')));
   res.forEach((r,i)=>{ if(r.status==='fulfilled') D[names[i]]=r.value; });
   D.meta=D.meta||{};
@@ -612,6 +612,18 @@ async function loadAll(){
 }
 function rebuild(){
   D.built=IMP.build({station:D.station,grats:D.meta.showPay===false?{...(D.grats||{}),pay:{}}:D.grats,tlc:D.tlc});
+  addRoster();
+}
+/* Master crew list (Master.xlsm, RGD sheet): everyone in the restaurant department can log in,
+   even if they are not on the dining room station list (Windjammer, specialty, room service, RA, RSUP...) */
+const RROLE={ROM:'Restaurant Operations Manager',MD:"Maitre d'",AMD:"Assistant Maitre d'",HW:'Head Waiter',W:'Waiter',WA:'Assistant Waiter',RA:'Restaurant Attendant',RSUP:'Restaurant Supervisor',RSPH:'Phone Operator'};
+function addRoster(){
+  const b=D.built, L=(D.roster&&D.roster.crew)||[]; if(!b||!b.crew) return;
+  for(const c of Object.values(b.crew)) if(RROLE[c.role]&&!['ROM','MD','AMD'].includes(c.role)) c.role=RROLE[c.role];   // 'W','WA','HW' codes from the gratuity file -> full role names
+  for(const r of L){ const pos=(r.pos||'').toUpperCase(), c=b.crew[r.id];
+    if(c){ if(!c.venue&&r.venue) c.venue=r.venue; if(!c.name&&r.name) c.name=r.name; continue; }
+    b.crew[r.id]={ id:r.id, name:r.name, role:RROLE[pos]||pos||'Crew', k:pos, venue:r.venue, tables:[], partners:[], roster:true, leader:['ROM','MD','AMD'].includes(pos) };
+  }
 }
 
 /* ---------------- login ---------------- */
@@ -640,7 +652,7 @@ function press(k){
 function setStep(st,id){ step=st; if(id!==undefined)pendingId=id; pin=''; drawPin(); }
 const weak=p=>/^(\d)\1{3}$/.test(p)||'0123456789'.includes(p)||'9876543210'.includes(p);
 function startId(id){
-  if(!D.built||!D.built.crew[id]){ $('err').textContent=D.built?'ID not found in this voyage’s station list. Check your crew ID or ask your Head Waiter.':'Voyage data is still loading. Try again in a moment.'; pin=''; drawPin(); return; }
+  if(!D.built||!D.built.crew[id]){ $('err').textContent=!D.station?'No crew data on this phone yet. First tap "Load My Utopia data file" below, then type your ID.':D.built?'ID not found in this voyage’s crew list. Check your crew ID or ask your Head Waiter.':'Voyage data is still loading. Try again in a moment.'; pin=''; drawPin(); return; }
   setStep(pinOf(id)?'pin':'create',id);
 }
 function tryStep(){
