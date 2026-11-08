@@ -705,6 +705,7 @@ document.addEventListener('keydown',e=>{ const tr=e.target.closest&&e.target.clo
 
 /* ---------------- tabs ---------------- */
 const ICON={
+ risk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>',
  heatmap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5" fill="currentColor"/></svg>',
  section:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11h16M6 11v8M18 11v8M8 7h8l2 4H6z"/></svg>',
  guests:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.8 3.1 2.6 3.5 5.2"/></svg>',
@@ -719,7 +720,7 @@ const ICON={
 function tabsList(){
   const t=[];
   if(me){ t.push(['section',isLeader(me)?'Team':'Section']); if(D.guests||(D.guestlog&&canSeeLog())) t.push(['guests','Guests']); if(!isLeader(me)) t.push(['kpi','KPI']); }
-  if((me||mgrView)&&canSeeTeam()) t.push(['heatmap','Heatmap']);
+  if((me||mgrView)&&canSeeTeam()) t.push(['risk','Risk'],['heatmap','Heatmap']);
   t.push(['menu','Menus'],['specialty','Specialty'],['compass','Compass']);
   if((me||mgrView)&&D.pol&&canSeeTeam()) t.push(['pol','POL']);
   if(me) t.push(['me','Me']);
@@ -1933,11 +1934,23 @@ function vHeatmap(){
   return `<div class="card" style="padding:0;overflow:hidden"><iframe title="Dining room heatmap" src="heatmap.html?app=1${hw?'&hw='+encodeURIComponent(hw):''}" style="display:block;width:100%;height:calc(100vh - 150px);min-height:560px;border:0;background:#0d1420"></iframe></div>`;
 }
 
+/* ---------------- Guest Risk Analysis page (risk.html; Head Waiters and managers) ---------------- */
+function vRiskPage(){
+  if(!canSeeTeam()) return '<div class="card"><p class="note">The Guest Risk Analysis is for Head Waiters and managers.</p></div>';
+  const hw=me&&me.role==='Head Waiter'?me.name:'';
+  setTimeout(async()=>{ const f=document.getElementById('riskf'); if(!f) return;
+    f.onload=()=>{ try{ const d=f.contentDocument, sel=d&&d.getElementById('hw'); if(sel&&hw&&[...sel.options].some(o=>o.value===hw)){ sel.value=hw; sel.dispatchEvent(new Event('change')); } }catch(e){} };
+    if(typeof PACK!=='undefined'){ const pk=await PACK.get('pack'); f.srcdoc=(pk&&pk.riskhtml)||'<p style="font-family:system-ui,sans-serif;padding:24px">Load the newest My Utopia data file to see the Guest Risk Analysis.</p>'; }
+    else f.src='risk.html';
+  },0);
+  return `<div class="card" style="padding:0;overflow:hidden"><iframe id="riskf" title="Guest Risk Analysis" style="display:block;width:100%;height:calc(100vh - 150px);min-height:560px;border:0;background:#fff"></iframe></div>`;
+}
+
 /* ---------------- render & events ---------------- */
 function render(){
   drawTabs(); drawDayLine();
-  const v={section:vSection,guests:vGuests,kpi:()=>vKpi(false),crew:vCrew,menu:vMenu,specialty:vSpecialty,pol:vPol,compass:vCompass,me:vMe,manager:vManager,heatmap:vHeatmap}[tab];
-  $('view').innerHTML=(me||['menu','compass','manager','specialty','pol','heatmap'].includes(tab))?((tab==='section'&&me?todayCard()+(me.role==='Head Waiter'?hwDashCard(meId):isLeader(me)?hwTableCard():''):'')+v()):'';
+  const v={section:vSection,guests:vGuests,kpi:()=>vKpi(false),crew:vCrew,menu:vMenu,specialty:vSpecialty,pol:vPol,compass:vCompass,me:vMe,manager:vManager,heatmap:vHeatmap,risk:vRiskPage}[tab];
+  $('view').innerHTML=(me||['menu','compass','manager','specialty','pol','heatmap','risk'].includes(tab))?((tab==='section'&&me?todayCard()+(me.role==='Head Waiter'?hwDashCard(meId):isLeader(me)?hwTableCard():''):'')+v()):'';
   if(tab==='manager') wireManager();
   for(const k of Object.keys(pdfOpen)) if(pdfOpen[k]&&tab==='compass') renderPdf(k);
 }
