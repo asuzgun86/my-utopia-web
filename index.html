@@ -597,10 +597,16 @@ async function getJSON(p){
   if(PRIVATE.includes(n)){ packP=packP||PACK.get('pack'); const pk=await packP; if(pk&&pk.files&&pk.files[n]!=null){ packInfo={voyage:pk.voyage,stamp:pk.stamp}; return pk.files[n]; } throw new Error(n+' not on this phone'); }
   const r=await fetch(p,{cache:'no-store'}); if(!r.ok) throw new Error(p+' '+r.status); return r.json(); }
 function loadPackFile(f){ if(!f) return; const msg=$('loadmsg'); msg.textContent='Loading data file…';
-  const rd=new FileReader(); rd.onload=async()=>{ try{ const x=JSON.parse(rd.result); if(x.kind!=='myutopia-data'||!x.files) throw new Error('bad');
+  const rd=new FileReader(); rd.onload=async()=>{ try{ let x=JSON.parse(rd.result);
+      if(x.kind==='myutopia-update'&&x.files){ /* small update file: replaces only the parts it carries (guest log, risk, heatmap) in the data already on this phone */
+        const cur=await PACK.get('pack');
+        if(!cur||!cur.files||String(cur.voyage)!==String(x.voyage)){ msg.textContent='Load the full voyage '+x.voyage+' data file (myutopia_data_V'+x.voyage+'.json) on this phone first, then this update.'; return; }
+        x={...cur,files:{...cur.files,...x.files},stamp:x.stamp,riskhtml:x.riskhtml||cur.riskhtml,heatmap:x.heatmap||cur.heatmap};
+      }
+      if(x.kind!=='myutopia-data'||!x.files) throw new Error('bad');
       await PACK.set('pack',x); if(x.heatmap){ try{ localStorage.setItem('hm_data',JSON.stringify(x.heatmap)); }catch(e){} }
       msg.textContent='Data loaded: voyage '+x.voyage+' ('+x.stamp+'). Opening…'; setTimeout(()=>location.reload(),900);
-    }catch(e){ msg.textContent='This is not a My Utopia data file (myutopia_data_V###.json).'; } }; rd.readAsText(f); }
+    }catch(e){ msg.textContent='This is not a My Utopia data file (myutopia_data_V###.json or myutopia_update_V###.json).'; } }; rd.readAsText(f); }
 async function loadAll(){
   const names=['meta','station','grats','tlc','menus','compass','history','guests','birthdays','avg8','sales','guestlog','risk','specialty','pol','compassdays','roster'];
   const res=await Promise.allSettled(names.map(n=>getJSON('data/'+n+'.json')));
