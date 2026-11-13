@@ -1291,7 +1291,7 @@ function vCompass(){
   return `${ph?`<div class="hero-photo"><img src="data/${esc(ph.src)}" alt="${esc(ph.label)}"><span>${esc(ph.label)}</span></div>`:''}${compassDayChips()}<div><div class="eyebrow">Cruise Compass</div><h1 class="sec-title">${c&&c.snapshot?'Day '+esc(c.snapshot.day)+' · '+esc(c.snapshot.where):'Today on board'}</h1>${c&&c.snapshot?`<div class="note">${esc(c.snapshot.date)}</div>`:''}</div>
    ${c&&c.snapshot?`<div class="tags">${c.snapshot.dress?`<span class="tag oc">Dress code: ${esc(c.snapshot.dress)}</span>`:''}${c.snapshot.forecast?`<span class="tag pref">${esc(c.snapshot.forecast)}${c.snapshot.temp?' · '+esc(c.snapshot.temp):''}</span>`:''}${c.snapshot.sunrise?`<span class="tag pref">Sunrise ${esc(c.snapshot.sunrise)} · Sunset ${esc(c.snapshot.sunset)}</span>`:''}</div>`:''}
    ${c&&c.highlights&&c.highlights.length?`<div class="card"><h2>Highlights</h2>${c.highlights.map(h=>`<div class="event"><b>${esc(h.title)}</b><small>${esc(h.where)}</small></div>`).join('')}</div>`:'<div class="banner">No Compass uploaded for this voyage yet.</div>'}
-   ${pdfCard('compass','Full Cruise Compass',files.compass)}
+   ${files.compass&&files.compass.pages===0?'':pdfCard('compass','Full Cruise Compass',files.compass)}
    ${pdfCard('shows','Shows & parties at a glance',files.shows)}`;
 }
 function pdfCard(key,label,info){
